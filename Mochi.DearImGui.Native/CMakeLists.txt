@@ -6,7 +6,11 @@ set(IMGUI_SOURCE_DIRECTORY "../external/imgui/")
 #TODO: Add support for ARM64
 #TODO: Consider using the determine-rid.(cmd|sh) script for this
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    set(DOTNET_RID "win-x64")
+	if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "Win32")
+		set(DOTNET_RID "win-x86")
+	elseif("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
+		set(DOTNET_RID "win-x64")
+	endif()
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     set(DOTNET_RID "linux-x64")
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")

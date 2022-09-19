@@ -12,4 +12,4 @@ if not exist external\imgui\ (
 
 :: Run generator (will also build Mochi.DearImGui.Native)
 echo Generating Mochi.DearImGui...
-dotnet run --configuration Release --project Mochi.DearImGui.Generator -- "external/imgui/" "Mochi.DearImGui.Native/" "Mochi.DearImGui/#Generated/"
+dotnet run --configuration Release --project Mochi.DearImGui.Generator -- "external/imgui/" "Mochi.DearImGui.Native/" "Mochi.DearImGui/#Generated/" %1

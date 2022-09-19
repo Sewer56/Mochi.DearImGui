@@ -11,10 +11,10 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-if (args.Length != 3)
+if (args.Length < 3)
 {
     Console.Error.WriteLine("Usage:");
-    Console.Error.WriteLine("    Mochi.DearImGui.Generator <path-to-dear-imgui-source> <path-to-mochi-dearimgui-native> <path-to-output>");
+    Console.Error.WriteLine("    Mochi.DearImGui.Generator <path-to-dear-imgui-source> <path-to-mochi-dearimgui-native> <path-to-output> <is-win-on-win-64>");
     return 1;
 }
 
@@ -22,11 +22,24 @@ const string canonicalBuildVariant = "Release";
 string dotNetRid;
 string nativeRuntimeBuildScript;
 string importLibraryName;
+string scriptParams = "";
+string? targetTriple = null;
 bool itaniumExportMode;
 
 if (OperatingSystem.IsWindows())
 {
-    dotNetRid = "win-x64";
+    if (args.Length > 3 && args[3] == "true")
+    {
+        dotNetRid = "win-x86";
+        scriptParams = "Win32";
+        targetTriple = "--target=i386-unknown-win32-unknown";
+    }
+    else
+    {
+        dotNetRid = "win-x64";
+        scriptParams = "x64";
+    }
+
     nativeRuntimeBuildScript = "build-native.cmd";
     importLibraryName = "Mochi.DearImGui.Native.lib";
     itaniumExportMode = false;
@@ -85,9 +98,13 @@ TranslatedLibraryBuilder libraryBuilder = new()
         EnableTemplateSupport = false,
     }
 };
+if (!string.IsNullOrEmpty(targetTriple))
+    libraryBuilder.AddCommandLineArgument(targetTriple);
+
 libraryBuilder.AddCommandLineArgument("--language=c++");
 libraryBuilder.AddCommandLineArgument($"-I{imGuiSourceDirectoryPath}");
 libraryBuilder.AddCommandLineArgument($"-DIMGUI_USER_CONFIG=\"{imGuiConfigFilePath}\"");
+
 libraryBuilder.AddFile(imGuiHeaderFilePath);
 libraryBuilder.AddFile(Path.Combine(imGuiSourceDirectoryPath, "imgui_internal.h"));
 
@@ -145,7 +162,7 @@ library = new InlineExportHelper(outputSession, imguiInlineExporterFilePath) { _
 
 // Rebuild the native DLL so that the librarian can access a version of the library including the inline-exported functions
 Console.WriteLine("Rebuilding Mochi.DearImGui.Native...");
-Process.Start(new ProcessStartInfo(nativeBuildScript)
+Process.Start(new ProcessStartInfo(nativeBuildScript, scriptParams)
 {
     WorkingDirectory = dearImGuiNativeRootPath
 })!.WaitForExit();

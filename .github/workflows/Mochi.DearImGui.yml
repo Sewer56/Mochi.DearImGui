@@ -35,6 +35,10 @@ jobs:
             os: windows-latest
             rid: win-x64
             generate-command: ./generate.cmd
+          - name: Windows x86
+            os: windows-latest
+            rid: win-x86
+            generate-command: ./generate.cmd true
           - name: Linux x64
             os: ubuntu-18.04
             rid: linux-x64
@@ -127,9 +131,9 @@ jobs:
       # ----------------------------------------------------------------------- Build the sample as a smoke test
       # We do this last so it can't indirectly affect the build process of any packages
       - name: Build Mochi.DearImGui.Sample (Debug)
-        run: dotnet build Mochi.DearImGui.Sample --configuration Debug
+        run: dotnet build Mochi.DearImGui.Sample --configuration Debug /p:RuntimeIdentifier=${{matrix.rid}} --no-self-contained
       - name: Test Mochi.DearImGui.Sample (Release)
-        run: dotnet build Mochi.DearImGui.Sample --configuration Release
+        run: dotnet build Mochi.DearImGui.Sample --configuration Release /p:RuntimeIdentifier=${{matrix.rid}} --no-self-contained
 
       # ----------------------------------------------------------------------- Upload artifacts
       # All of these steps ignore failure so that we get what artifacts are available when things are broken
